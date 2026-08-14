@@ -24,15 +24,17 @@ uv pip install --python .venv/bin/python pandas matplotlib requests pyarrow pill
 ### 영상 (ffmpeg 필요)
 
 ```bash
-.venv/bin/python frames.py                  # 프레임 18장 -> out/frames/{light,dark}/
+.venv/bin/python render.py                   # 프레임 18장 -> out/frames/{light,dark}/
 .venv/bin/python thumbnail.py               # 썸네일 2안 + 피드 크기 미리보기
 .venv/bin/python build_video.py --silent    # 무음 프리뷰 (키 없이 흐름 확인)
 
-export ELEVENLABS_API_KEY="sk_..."
-export ELEVENLABS_VOICE_ID="..."
+cp .env.example .env                        # 여기에 ElevenLabs 키를 넣는다 (.gitignore 됨)
 .venv/bin/python render_audio.py            # 나레이션 -> out/audio/*.mp3
 .venv/bin/python build_video.py             # 완성본 -> out/ep01.mp4
 ```
+
+장면마다 앞 1.4초 동안 데이터가 그려지고, 나머지는 정지한다.
+이어지는 장면에서는 **새로 등장하는 선만** 그려진다 (앞 장면에서 본 선은 완성 상태로 유지).
 
 **대본은 `narration.py` 한 곳에만 있다.** 한 장면을 고쳤으면
 그 `out/audio/<stem>.mp3` 만 지우고 `render_audio.py` → `build_video.py` 를 다시 돌린다.
@@ -83,7 +85,7 @@ export ELEVENLABS_VOICE_ID="..."
 | `control.py` | 구직 스레드 대조군 → `data/hire_vs_seek.csv` |
 | `analyze.py` | 키워드 침투율 → `data/keyword_share.csv`, `data/volume.csv` |
 | `charts.py` | 차트 3종 → `out/` |
-| `frames.py` | 영상용 프레임 18장 (번호 순서 = 영상 순서) |
+| `render.py` | 장면 렌더러. 진행도 `p`(0~1)를 받아 정지화면과 애니메이션 프레임을 만든다 |
 | `thumbnail.py` | 썸네일 2안 + 피드 크기(350px) 미리보기 |
 | `narration.py` | **대본 원본.** 프레임별 나레이션 + hold 시간 |
 | `render_audio.py` | 나레이션 → ElevenLabs multilingual v2 → mp3 |

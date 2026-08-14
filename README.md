@@ -26,6 +26,7 @@ uv pip install --python .venv/bin/python pandas matplotlib requests pyarrow pill
 ```bash
 .venv/bin/python render.py                   # 프레임 18장 -> out/frames/{light,dark}/
 .venv/bin/python thumbnail.py               # 썸네일 2안 + 피드 크기 미리보기
+.venv/bin/python avatar.py                  # 채널 아이콘 + 채널 아트
 .venv/bin/python build_video.py --silent    # 무음 프리뷰 (키 없이 흐름 확인)
 
 cp .env.example .env                        # 여기에 ElevenLabs 키를 넣는다 (.gitignore 됨)
@@ -86,6 +87,7 @@ cp .env.example .env                        # 여기에 ElevenLabs 키를 넣는
 | `analyze.py` | 키워드 침투율 → `data/keyword_share.csv`, `data/volume.csv` |
 | `charts.py` | 차트 3종 → `out/` |
 | `render.py` | 장면 렌더러. 진행도 `p`(0~1)를 받아 정지화면과 애니메이션 프레임을 만든다 |
+| `avatar.py` | 채널 아이콘 · 채널 아트 → `out/brand/` |
 | `thumbnail.py` | 썸네일 2안 + 피드 크기(350px) 미리보기 |
 | `narration.py` | **대본 원본.** 프레임별 나레이션 + hold 시간 |
 | `render_audio.py` | 나레이션 → ElevenLabs multilingual v2 → mp3 |

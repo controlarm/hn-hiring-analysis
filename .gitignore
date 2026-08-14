@@ -1,0 +1,27 @@
+# 비밀
+.env
+
+# 파이썬
+.venv/
+__pycache__/
+*.pyc
+
+# 원본 캐시. collect.py 가 공개 API 에서 다시 받아온다
+data/raw/
+data/raw_control/
+# 58MB. collect.py 로 재생성됨
+data/posts.parquet
+# 집계 결과(keyword_share / volume / hire_vs_seek csv)는 작으므로 커밋한다 — 검증용
+
+# 목소리 테스트 샘플
+out/voicetest/
+
+# 렌더 산출물. frames.py / build_video.py 로 다시 만든다
+out/audio/
+out/frames/
+out/_segments/
+out/*.mp4
+out/*.mp3
+
+# macOS
+.DS_Store

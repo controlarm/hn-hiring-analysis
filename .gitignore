@@ -1,5 +1,8 @@
 # 비밀
 .env
+client_secret.json
+token.json
+data/analytics/
 
 # 파이썬
 .venv/

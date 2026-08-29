@@ -87,6 +87,7 @@ cp .env.example .env                        # 여기에 ElevenLabs 키를 넣는
 | `analyze.py` | 키워드 침투율 → `data/keyword_share.csv`, `data/volume.csv` |
 | `charts.py` | 차트 3종 → `out/` |
 | `render.py` | 장면 렌더러. 진행도 `p`(0~1)를 받아 정지화면과 애니메이션 프레임을 만든다 |
+| `analytics.py` | YouTube Analytics API → 노출·CTR·조회율·트래픽 소스 (OAuth 필요) |
 | `avatar.py` | 채널 아이콘 · 채널 아트 → `out/brand/` |
 | `thumbnail.py` | 썸네일 2안 + 피드 크기(350px) 미리보기 |
 | `narration.py` | **대본 원본.** 프레임별 나레이션 + hold 시간 |

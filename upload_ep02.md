@@ -1,5 +1,7 @@
 # 2편 업로드 — 붙여넣기용
 
+**발행 완료: 2026-08-29 · https://youtu.be/Wht34-0Gg_Y**
+
 파일: `out/ep02.mp4` (3분 6초 · 1920×1080 · 5.2MB)
 썸네일: `out/thumb_ep02/thumb_a.png` (먼저), `thumb_b.png` (Test & Compare 추가)
 
@@ -57,7 +59,8 @@ https://github.com/controlarm/hn-hiring-analysis
 2026년은 7개월치(공고 2,247건)이고, 거절 상승은 신뢰구간이 작년과 살짝 겹칩니다.
 안 썼다고 안 해준다는 뜻도 아닙니다. 센 것은 '공고에 쓰인 말'입니다.
 
-1편: 채용공고 9만 건을 세어봤더니, 직업 이름이 바뀌어 있었다
+1편 — "데이터 사이언티스트"는 어디로 갔나
+https://youtu.be/XTcukQKfUyE
 
 나레이션은 AI 음성입니다.
 ```

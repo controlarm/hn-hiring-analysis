@@ -22,9 +22,15 @@ from pathlib import Path
 
 import requests
 
-from narration import CHECK_NUMBERS, scenes
+# --ep 02 로 2편 대본을 갈아끼운다
+if "--ep" in sys.argv and sys.argv[sys.argv.index("--ep") + 1] == "02":
+    from narration_ep02 import CHECK_NUMBERS, scenes
+    OUT_DIR = "out/audio_ep02"
+else:
+    from narration import CHECK_NUMBERS, scenes
+    OUT_DIR = "out/audio"
 
-OUT = Path("out/audio")
+OUT = Path(OUT_DIR)
 API = "https://api.elevenlabs.io/v1/text-to-speech"
 MODEL = "eleven_multilingual_v2"
 

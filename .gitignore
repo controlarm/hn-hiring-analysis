@@ -20,11 +20,15 @@ data/posts.parquet
 out/voicetest/
 
 # 렌더 산출물. frames.py / build_video.py 로 다시 만든다
-out/audio/
-out/frames/
+out/audio*/
+out/frames*/
 out/_segments/
 out/*.mp4
 out/*.mp3
 
 # macOS
 .DS_Store
+
+# 내부 기획 문서 — 공개 레포에 올릴지는 판단 필요
+STRATEGY.md
+session_history/

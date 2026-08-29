@@ -16,16 +16,26 @@ import subprocess
 import sys
 from pathlib import Path
 
-from narration import scenes
-from render import BUILDERS, render
+# --ep 02 로 2편 모듈을 갈아끼운다. 장면 정의와 대본만 다르고 나머지는 같다
+if "--ep" in sys.argv and sys.argv[sys.argv.index("--ep") + 1] == "02":
+    from narration_ep02 import scenes
+    from render_ep02 import BUILDERS, OUT as FRAME_ROOT, render
+    EP = "ep02"
+else:
+    from narration import scenes
+    from render import BUILDERS, render
+    FRAME_ROOT = Path("out/frames")
+    EP = "ep01"
 
-AUDIO = Path("out/audio")
 WORK = Path("out/_segments")
 FPS = 30
 ANIM_SEC = 1.4      # 장면 도입 애니메이션 길이
 SPEED = 0.95        # 숫자가 많아서 기본 속도는 빠르게 들린다
 TAIL = 0.35
 CPS = 5.5           # 무음 프리뷰용 한국어 초당 글자수
+
+
+AUDIO = Path(f"out/audio_{EP}") if EP != "ep01" else Path("out/audio")
 
 
 def run(cmd):
@@ -56,8 +66,8 @@ def main() -> None:
     silent = "--silent" in argv
     no_anim = "--no-anim" in argv
     theme = "light" if "light" in argv else "dark"
-    still_dir = Path("out/frames") / theme
-    dest = Path("out") / ("ep01_preview.mp4" if silent else "ep01.mp4")
+    still_dir = FRAME_ROOT / theme
+    dest = Path("out") / f"{EP}{'_preview' if silent else ''}.mp4"
 
     if WORK.exists():
         shutil.rmtree(WORK)
@@ -66,7 +76,7 @@ def main() -> None:
     segs, total = [], 0.0
     for i, (stem, text, hold) in enumerate(scenes()):
         if stem not in BUILDERS:
-            sys.exit(f"render.py 에 '{stem}' 장면이 없습니다")
+            sys.exit(f"렌더러에 '{stem}' 장면이 없습니다")
         still = still_dir / f"{stem}.png"
         if not still.exists():
             sys.exit(f"프레임 없음: {still}  (render.py 를 먼저 돌리세요)")

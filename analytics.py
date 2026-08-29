@@ -25,6 +25,7 @@ usage:
   .venv/bin/python analytics.py 2026-08-21 # 시작일 지정
 """
 
+import re
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -58,20 +59,33 @@ def auth():
     return creds
 
 
-def query(yta, start, end, metrics, dimensions=None, sort=None):
+def query(yta, start, end, metrics, dimensions=None, sort=None,
+          filters=None, max_results=200):
     """실패해도 죽지 않는다. 지표 이름이 바뀌거나 권한이 없을 수 있다."""
     try:
         req = yta.reports().query(
             ids="channel==MINE", startDate=start, endDate=end,
             metrics=metrics,
             **({"dimensions": dimensions} if dimensions else {}),
-            **({"sort": sort} if sort else {}))
+            **({"sort": sort} if sort else {}),
+            **({"filters": filters} if filters else {}),
+            # video 차원 리포트는 maxResults 가 없으면 거절된다
+            **({"maxResults": max_results} if dimensions == "video" else {}))
         r = req.execute()
         cols = [h["name"] for h in r["columnHeaders"]]
         return pd.DataFrame(r.get("rows", []), columns=cols)
     except Exception as e:
         print(f"  [건너뜀] {metrics} — {str(e)[:160]}")
         return pd.DataFrame()
+
+
+def video_seconds(yt, vid):
+    """ISO8601 재생시간 -> 초. 지속 곡선의 x축을 실제 시각으로 바꾸기 위함."""
+    d = yt.videos().list(part="contentDetails", id=vid).execute()
+    iso = d["items"][0]["contentDetails"]["duration"]
+    m = re.match(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?", iso)
+    h, mi, se = (int(g or 0) for g in m.groups())
+    return h * 3600 + mi * 60 + se
 
 
 def main():
@@ -109,20 +123,29 @@ def main():
                     "averageViewPercentage", "subscribersGained", "sub_rate_%"]]
               .to_string(index=False))
 
-    # ---------- 2. 노출 / CTR ----------
-    # 2026-01-15 에 Analytics API 에 추가된 지표. 이름이 바뀌면 위 [건너뜀] 이 뜬다
-    imp = query(yta, start, end,
-                "videoThumbnailImpressions,videoThumbnailImpressionsClickRate",
-                dimensions="video", sort="-videoThumbnailImpressions")
-    if not imp.empty:
-        imp["title"] = imp["video"].map(titles).fillna(imp["video"])
-        print("\n[2] 노출 / 클릭률")
-        print(imp[["title", "videoThumbnailImpressions",
-                   "videoThumbnailImpressionsClickRate"]].to_string(index=False))
-        ctr = imp["videoThumbnailImpressionsClickRate"].iloc[0]
-        print(f"\n  진단: CTR {ctr:.1f}%  "
-              + ("→ 2% 미만. 썸네일·제목 문제" if ctr < 2 else
-                 "→ 4~10% 정상 구간" if ctr >= 4 else "→ 2~4%. 개선 여지 있음"))
+    # ---------- 2. 시청 지속 곡선 ----------
+    # 어디서 이탈하는지가 조회수보다 훨씬 중요하다.
+    # 노출/CTR(videoThumbnailImpressions)은 reports.query 가 지원하지 않는다.
+    # "The query is not supported" 로 거절되므로 Studio 도달범위 탭에서 직접 확인할 것.
+    imp = pd.DataFrame()
+    for vid, title in titles.items():
+        ret = query(yta, start, end,
+                    "audienceWatchRatio,relativeRetentionPerformance",
+                    dimensions="elapsedVideoTimeRatio", filters=f"video=={vid}")
+        if ret.empty:
+            continue
+        length = video_seconds(yt, vid)
+        print(f"\n[2] 시청 지속 곡선 — {title}")
+        for i in range(0, len(ret), max(1, len(ret) // 12)):
+            r = ret.iloc[i]
+            s = int(r["elapsedVideoTimeRatio"] * length)
+            bar = "█" * int(r["audienceWatchRatio"] * 40)
+            print(f"    {s // 60}:{s % 60:02d}  {r['audienceWatchRatio'] * 100:5.1f}%  {bar}")
+        early = ret[ret["elapsedVideoTimeRatio"] <= 0.06]["audienceWatchRatio"]
+        if len(early) >= 2:
+            drop = (early.iloc[0] - early.iloc[-1]) * 100
+            print(f"\n  진단: 첫 {int(0.06 * length)}초에 {drop:.0f}%p 이탈  "
+                  + ("→ 훅 문제. 도입부를 다시 설계할 것" if drop > 40 else "→ 정상 범위"))
 
     # ---------- 3. 트래픽 소스 ----------
     tr = query(yta, start, end, "views",

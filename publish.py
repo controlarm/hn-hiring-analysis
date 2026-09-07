@@ -59,6 +59,7 @@ def main():
     ap.add_argument("--append-desc", help="설명 끝에 덧붙인다")
     ap.add_argument("--tags", help="쉼표 구분")
     ap.add_argument("--thumbnail")
+    ap.add_argument("--privacy", choices=["private", "unlisted", "public"])
     ap.add_argument("--restore", help="백업 JSON 으로 snippet 되돌리기")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
@@ -104,6 +105,18 @@ def main():
         print("-> snippet 반영됨")
     else:
         print("-> snippet 변경 없음")
+
+    if a.privacy:
+        # status 는 snippet 과 별개 part 라 따로 보낸다. 여기도 통째 교체이므로
+        # 기존 status 를 읽어 privacyStatus 만 갈아끼운다
+        st = {k: v for k, v in item["status"].items()
+              if k in ("privacyStatus", "selfDeclaredMadeForKids",
+                       "embeddable", "license", "publicStatsViewable")}
+        print(f"  privacyStatus  {st.get('privacyStatus')} -> {a.privacy}")
+        st["privacyStatus"] = a.privacy
+        yt.videos().update(part="status",
+                           body={"id": a.video, "status": st}).execute()
+        print("-> 공개 범위 반영됨")
 
     if a.thumbnail:
         yt.thumbnails().set(videoId=a.video,

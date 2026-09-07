@@ -58,6 +58,7 @@ def main():
     ap.add_argument("--desc", help="설명 전체 교체. 파일 경로면 파일 내용을 쓴다")
     ap.add_argument("--append-desc", help="설명 끝에 덧붙인다")
     ap.add_argument("--tags", help="쉼표 구분")
+    ap.add_argument("--lang", help="defaultLanguage/defaultAudioLanguage (예: ko)")
     ap.add_argument("--thumbnail")
     ap.add_argument("--privacy", choices=["private", "unlisted", "public"])
     ap.add_argument("--restore", help="백업 JSON 으로 snippet 되돌리기")
@@ -93,6 +94,10 @@ def main():
     if a.tags:
         new["tags"] = [t.strip() for t in a.tags.split(",") if t.strip()]
         print(f"  tags        -> {len(new['tags'])}개")
+    if a.lang:
+        # Studio 업로드본은 이 둘이 비어 있다. 비면 자막·번역 기능이 언어를 못 잡는다
+        new["defaultLanguage"] = new["defaultAudioLanguage"] = a.lang
+        print(f"  language    -> {a.lang}")
 
     if a.dry_run:
         print("\n[dry-run] 아래를 보낼 예정:")

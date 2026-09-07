@@ -16,6 +16,9 @@ data/raw_control/
 data/posts.parquet
 # 집계 결과(keyword_share / volume / hire_vs_seek csv)는 작으므로 커밋한다 — 검증용
 
+# publish.py 가 수정 전에 남기는 스냅샷. 실행할 때마다 쌓인다
+data/video_backup/
+
 # 목소리 테스트 샘플
 out/voicetest/
 

@@ -16,16 +16,19 @@ narration.py -> ElevenLabs -> out/audio/*.mp3 (프레임별 1개)
 이미 렌더된 파일은 건너뛰므로, 대본 한 줄만 고쳤으면 그 mp3만 지우고 다시 돌리면 된다.
 """
 
+import importlib
 import os
 import sys
 from pathlib import Path
 
 import requests
 
-# --ep 02 로 2편 대본을 갈아끼운다
-if "--ep" in sys.argv and sys.argv[sys.argv.index("--ep") + 1] == "02":
-    from narration_ep02 import CHECK_NUMBERS, scenes
-    OUT_DIR = "out/audio_ep02"
+# --ep 03 처럼 편 번호를 주면 그 편 대본을 갈아끼운다. 없으면 1편.
+if "--ep" in sys.argv:
+    EP = sys.argv[sys.argv.index("--ep") + 1]
+    _m = importlib.import_module(f"narration_ep{EP}")
+    CHECK_NUMBERS, scenes = _m.CHECK_NUMBERS, _m.scenes
+    OUT_DIR = f"out/audio_ep{EP}"
 else:
     from narration import CHECK_NUMBERS, scenes
     OUT_DIR = "out/audio"

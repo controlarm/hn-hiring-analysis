@@ -31,30 +31,52 @@ from datetime import date, timedelta
 from pathlib import Path
 
 import pandas as pd
+from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+# force-ssl 은 읽기에 필요 없다. 발행(videos.update / thumbnails.set)용으로 미리 받아둔다.
+# 스코프를 나중에 늘리면 동의를 또 받아야 하는데, 테스트 모드에서는 그게 잦아진다.
 SCOPES = ["https://www.googleapis.com/auth/yt-analytics.readonly",
-          "https://www.googleapis.com/auth/youtube.readonly"]
+          "https://www.googleapis.com/auth/youtube.readonly",
+          "https://www.googleapis.com/auth/youtube.force-ssl"]
+# 이 구글 계정에는 개인 채널도 붙어 있다. 동의 화면에서 잘못 고르면
+# 엉뚱한 채널 숫자를 보게 되므로, 인증 직후 채널을 대조한다.
+CHANNEL_ID = "UCJ7gCTc6xZW1Uw1do5dMywA"      # 대조군
 SECRET = Path("client_secret.json")
 TOKEN = Path("token.json")
 OUT = Path("data/analytics")
 
 
+def consent():
+    """브라우저를 열어 새로 동의받는다."""
+    if not SECRET.exists():
+        sys.exit(f"{SECRET} 가 없습니다. 파일 상단의 설정 절차를 먼저 진행하세요.")
+    print("브라우저에서 구글 계정 동의가 필요합니다...")
+    return InstalledAppFlow.from_client_secrets_file(
+        str(SECRET), SCOPES).run_local_server(port=0)
+
+
 def auth():
     creds = None
     if TOKEN.exists():
-        creds = Credentials.from_authorized_user_file(str(TOKEN), SCOPES)
+        try:
+            creds = Credentials.from_authorized_user_file(str(TOKEN), SCOPES)
+        except ValueError:
+            creds = None            # 스코프가 늘어나면 기존 토큰은 못 쓴다
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
+            try:
+                creds.refresh(Request())
+            except RefreshError:
+                # OAuth 앱이 '테스트' 상태면 리프레시 토큰이 7일 만에 만료된다.
+                # 구글 정책이라 코드로 못 막는다. 만료되면 그냥 다시 동의받는다.
+                print("토큰이 만료됐습니다(테스트 모드는 7일). 다시 동의받습니다.")
+                creds = consent()
         else:
-            if not SECRET.exists():
-                sys.exit(f"{SECRET} 가 없습니다. 파일 상단의 설정 절차를 먼저 진행하세요.")
-            creds = InstalledAppFlow.from_client_secrets_file(
-                str(SECRET), SCOPES).run_local_server(port=0)
+            creds = consent()
         TOKEN.write_text(creds.to_json())
     return creds
 
@@ -96,9 +118,18 @@ def main():
     yt = build("youtube", "v3", credentials=creds)
 
     titles = {}
-    ch = yt.channels().list(part="contentDetails,statistics", mine=True).execute()
-    stats = ch["items"][0]["statistics"]
-    uploads = ch["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+    ch = yt.channels().list(part="snippet,contentDetails,statistics",
+                            mine=True).execute()
+    got = ch["items"][0]
+    if got["id"] != CHANNEL_ID:
+        TOKEN.unlink(missing_ok=True)
+        sys.exit(
+            f"\n잘못된 채널로 인증됐습니다: '{got['snippet']['title']}' ({got['id']})\n"
+            f"필요한 채널: '대조군' ({CHANNEL_ID})\n\n"
+            "토큰을 지웠습니다. 다시 실행한 뒤 동의 화면에서\n"
+            "'대조군' 채널을 선택하세요 (개인 채널 아님).")
+    stats = got["statistics"]
+    uploads = got["contentDetails"]["relatedPlaylists"]["uploads"]
     for it in yt.playlistItems().list(part="snippet", playlistId=uploads,
                                       maxResults=50).execute().get("items", []):
         titles[it["snippet"]["resourceId"]["videoId"]] = it["snippet"]["title"]

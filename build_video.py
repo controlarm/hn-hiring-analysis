@@ -12,15 +12,19 @@
 
 import json
 import shutil
+import importlib
 import subprocess
 import sys
 from pathlib import Path
 
-# --ep 02 로 2편 모듈을 갈아끼운다. 장면 정의와 대본만 다르고 나머지는 같다
-if "--ep" in sys.argv and sys.argv[sys.argv.index("--ep") + 1] == "02":
-    from narration_ep02 import scenes
-    from render_ep02 import BUILDERS, OUT as FRAME_ROOT, render
-    EP = "ep02"
+# --ep 03 처럼 편 번호를 주면 그 편 모듈을 갈아끼운다.
+# 장면 정의와 대본만 다르고 합성 방식은 모든 편이 같다
+if "--ep" in sys.argv:
+    _n = sys.argv[sys.argv.index("--ep") + 1]
+    scenes = importlib.import_module(f"narration_ep{_n}").scenes
+    _r = importlib.import_module(f"render_ep{_n}")
+    BUILDERS, FRAME_ROOT, render = _r.BUILDERS, _r.OUT, _r.render
+    EP = f"ep{_n}"
 else:
     from narration import scenes
     from render import BUILDERS, render

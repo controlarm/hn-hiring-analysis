@@ -301,7 +301,8 @@ def s_us_flip(p):
     if an > 0.02:
         card(fig, 0.54 - 0.03 * (1 - an), 0.30, 0.36, 0.40, alpha=an,
              fc="#1e1d1b", ec=T["s1"], lw=2.2)
-        fig.text(0.72, 0.50, "$150,000 – $210,000", fontsize=27,
+        # matplotlib 은 $...$ 를 수식으로 읽는다. 달러가 두 번 나오면 반드시 이스케이프
+        fig.text(0.72, 0.50, r"\$150,000 – \$210,000", fontsize=27,
                  color=T["s1"], ha="center", va="center", fontweight="bold",
                  alpha=an)
         fig.text(0.72, 0.755, "미국", fontsize=20, color=T["ink3"],

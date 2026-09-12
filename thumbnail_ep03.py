@@ -100,10 +100,51 @@ def variant_b():
     plt.close(fig)
 
 
+def variant_c():
+    """v2 도입부에 맞춘 안. 한국 시청자가 매일 보는 문구에서 출발한다.
+
+    A·B 안은 차트가 주인공이라 작게 줄이면 무슨 얘긴지 알 수 없다.
+    이 안은 글자만으로 읽히므로 목록에서 작게 떠도 메시지가 남는다.
+    """
+    import matplotlib.patches as mpatches
+    mpl.rcParams["font.family"] = KR
+    fig = plt.figure(figsize=(12.8, 7.2), dpi=100, facecolor=BG)
+
+    fig.text(0.055, 0.845, "채용공고에 연봉이 없는 것", fontsize=31, color=DIM,
+             va="top")
+    fig.text(0.055, 0.700, "미국은", fontsize=78, color=INK, va="top",
+             fontweight="bold")
+    fig.text(0.055, 0.505, "법으로", fontsize=78, color=INK, va="top",
+             fontweight="bold")
+    fig.text(0.055, 0.310, "막았습니다", fontsize=78, color=HOT, va="top",
+             fontweight="bold")
+    fig.text(0.058, 0.085, "공고 80,854건을 세어봤습니다", fontsize=22, color=DIM)
+
+    # 오른쪽: 바뀌기 전과 후
+    for y, label, val, c, struck in [
+            (0.545, "한국", "회사 내규에 따름", DIM, True),
+            (0.235, "미국", r"\$150,000 – \$210,000", BLUE, False)]:
+        fig.patches.append(mpatches.FancyBboxPatch(
+            (0.505, y), 0.445, 0.215,
+            boxstyle="round,pad=0,rounding_size=0.014",
+            transform=fig.transFigure, facecolor="#1e1d1b",
+            edgecolor=c if not struck else "#2b2a28", linewidth=3))
+        fig.text(0.532, y + 0.163, label, fontsize=21, color=DIM, va="center")
+        fig.text(0.532, y + 0.072, val, fontsize=30, color=c, va="center",
+                 fontweight="bold")
+        if struck:
+            fig.patches.append(mpatches.Rectangle(
+                (0.527, y + 0.068), 0.212, 0.007,
+                transform=fig.transFigure, facecolor=HOT, zorder=6))
+    fig.savefig(OUT / "thumb_c.png", facecolor=BG)
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     variant_a()
     variant_b()
+    variant_c()
     try:
         from PIL import Image
         for p in sorted(OUT.glob("thumb_?.png")):

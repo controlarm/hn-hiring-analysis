@@ -1,5 +1,5 @@
 """
-30초 데모 합성. 프레임 시퀀스 + 나레이션 + 사운드.
+3편 v2 합성. 프레임 시퀀스 + 나레이션 + 사운드.
 
 기존 build_video.py 와 다른 점
   - 장면 단위 정지화면이 아니라 연속 프레임 시퀀스를 그대로 쓴다
@@ -15,12 +15,11 @@ usage: .venv/bin/python build_demo.py
 import subprocess
 from pathlib import Path
 
-from render_demo import AUDIO, FPS, SPEED, TAIL, timeline
+from render_v2 import AUDIO, FPS, HOLDS, SPEED, TAIL, timeline
 
-WORK = Path("out/_demo")
-FRAMES = Path("out/frames_demo")
-OUT = Path("out/demo30.mp4")
-HOLDS = {"01_hook": 0.3, "02_twist": 1.2, "03_data": 0.5}
+WORK = Path("out/_v2")
+FRAMES = Path("out/frames_v2")
+OUT = Path("out/ep03_v2.mp4")
 
 
 def run(cmd):
